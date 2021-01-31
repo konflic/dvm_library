@@ -1,5 +1,6 @@
 import os
 import requests
+import argparse
 
 from urllib.parse import urljoin
 from pathvalidate import sanitize_filename
@@ -19,12 +20,11 @@ def download_txt(url, folder):
     except requests.HTTPError:
         return None
     else:
-        book_data = extract_book_data(book_id=url.split("=")[-1])
-        path_for_book = os.path.join(folder, sanitize_filename(f"{book_data['title']}.txt"))
-
-        print(book_data)
+        book_data = parse_book_page(get_book_html(book_id=url.split("=")[-1]))
 
         download_image(book_data["image"])
+
+        path_for_book = os.path.join(folder, sanitize_filename(f"{book_data['title']}.txt"))
 
         with open(path_for_book, "w+") as f:
             f.write(response.text)
@@ -42,10 +42,12 @@ def download_image(image_url, folder="images/"):
         f.write(requests.get(image_url, verify=False).content)
 
 
-def extract_book_data(book_id):
-    response = requests.get(f"https://tululu.org/b{book_id}/", verify=False)
+def get_book_html(book_id):
+    return requests.get(f"https://tululu.org/b{book_id}/", verify=False).text
 
-    soup = BeautifulSoup(response.text, "lxml")
+
+def parse_book_page(page_html):
+    soup = BeautifulSoup(page_html, "lxml")
     h1 = soup.find(id="content").find("h1").text
 
     title, author = map(lambda item: item.strip(), h1.split("::"))
@@ -76,4 +78,10 @@ def save_books(books_id, folder="books/"):
 
 
 if __name__ == "__main__":
-    save_books(range(1, 11))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("start_id", type=int, default=1)
+    parser.add_argument("end_id", type=int, default=10)
+
+    args = parser.parse_args()
+
+    save_books(range(args.start_id, args.end_id))
