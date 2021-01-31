@@ -51,12 +51,14 @@ def extract_book_data(book_id):
     title, author = map(lambda item: item.strip(), h1.split("::"))
     image = soup.find("div", class_="bookimage").find("img").get("src")
     comments = soup.find(id="content").find_all(class_="texts")
+    genres = soup.find(id="content").find("span", class_="d_book").find_all("a")
 
     return {
         "title": title,
         "author": author,
         "image": urljoin("https://tululu.org", image),
-        "comments": list(map(lambda item: item.find(class_="black").text, comments))
+        "comments": [comment.find(class_="black").text for comment in comments],
+        "genres": [genre.text for genre in genres]
     }
 
 
