@@ -2,15 +2,18 @@ import os
 import requests
 
 
-def save_book(book_name, book_id, folder="books"):
-    r = requests.get(f"https://tululu.org/txt.php?id={book_id}", verify=False)
-
+def save_book(books_id, folder="books"):
     if not os.path.isdir(folder):
         os.mkdir(folder)
 
-    with open(f"books/{book_name}.txt", "w+") as f:
-        f.write(r.text)
+    if isinstance(books_id, list):
+
+        for book in books_id:
+            r = requests.get(f"https://tululu.org/txt.php?id={book}", verify=False)
+
+            with open(f"books/id{book}.txt", "w+") as f:
+                f.write(r.text)
 
 
 if __name__ == "__main__":
-    save_book("Пески Марса", 32168)
+    save_book([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
