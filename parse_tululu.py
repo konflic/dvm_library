@@ -55,14 +55,14 @@ def parse_book_page(page_html):
     h1 = soup.find(id="content").find("h1").text
 
     title, author = map(lambda item: item.strip(), h1.split("::"))
-    image = soup.find("div", class_="bookimage").find("img").get("src")
+    relative_patth_to_image = soup.find("div", class_="bookimage").find("img").get("src")
     comments = soup.find(id="content").find_all(class_="texts")
     genres = soup.find(id="content").find("span", class_="d_book").find_all("a")
 
     return {
         "title": title,
         "author": author,
-        "image": urljoin("https://tululu.org", image),
+        "image": urljoin("https://tululu.org", relative_patth_to_image),
         "comments": [comment.find(class_="black").text for comment in comments],
         "genres": [genre.text for genre in genres]
     }
