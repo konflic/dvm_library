@@ -33,8 +33,7 @@ def download_book(url, folder):
 
 
 def download_image(image_url, folder="images/"):
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    os.makedirs(folder, exist_ok=True)
 
     save_as = os.path.join(folder, urlsplit(image_url).path.split("/")[-1])
 
@@ -77,8 +76,7 @@ def check_for_redirect(response):
 
 
 def save_books(books_id, folder="books/"):
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    os.makedirs(folder, exist_ok=True)
 
     for book_id in books_id:
         book_url = f"https://tululu.org/txt.php?id={book_id}"
