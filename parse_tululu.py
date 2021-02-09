@@ -48,6 +48,7 @@ def download_image(image_url, folder="images/"):
 def get_book_html(book_id):
     response = requests.get(f"https://tululu.org/b{book_id}/", verify=False)
     response.raise_for_status()
+    check_for_redirect(response)
 
     return response.text
 
