@@ -84,6 +84,9 @@ def save_books(books_id, books_folder="books/", images_folders="images/"):
             download_book(book_url, books_folder)
         except requests.HTTPError:
             print(f"{book_url} отсутствует на сайте!", file=sys.stderr)
+        except requests.ConnectionError:
+            print(f"Ошибка соединения при обращении к {book_url}!", file=sys.stderr)
+        finally:
             continue
 
 
