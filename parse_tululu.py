@@ -8,13 +8,15 @@ from pathvalidate import sanitize_filename
 from bs4 import BeautifulSoup
 
 
-def download_txt(url, folder):
+def download_book(url, folder):
     """Функция для скачивания книг.
     :param url (str): Ссылка на текст, который хочется скачать.
     :param folder (str): Папка, куда сохранять.
     :return: (str) Путь до файла, куда сохранён текст или None
     """
     response = requests.get(url, verify=False, allow_redirects=False)
+
+    response.raise_for_status()
 
     check_for_redirect(response)
 
@@ -37,11 +39,17 @@ def download_image(image_url, folder="images/"):
     save_as = os.path.join(folder, image_url.split("/")[-1])
 
     with open(save_as, "wb+") as f:
-        f.write(requests.get(image_url, verify=False).content)
+        response = requests.get(image_url, verify=False)
+        response.raise_for_status()
+
+        f.write(response.content)
 
 
 def get_book_html(book_id):
-    return requests.get(f"https://tululu.org/b{book_id}/", verify=False).text
+    response = requests.get(f"https://tululu.org/b{book_id}/", verify=False)
+    response.raise_for_status()
+
+    return response.text
 
 
 def parse_book_page(page_html):
@@ -75,7 +83,7 @@ def save_books(books_id, folder="books/"):
         book_url = f"https://tululu.org/txt.php?id={book_id}"
 
         try:
-            download_txt(book_url, folder)
+            download_book(book_url, folder)
         except requests.HTTPError:
             print(f"{book_url} отсутствует на сайте!", file=sys.stderr)
             continue
