@@ -33,8 +33,6 @@ def download_book(url, folder):
 
 
 def download_image(image_url, folder="images/"):
-    os.makedirs(folder, exist_ok=True)
-
     save_as = os.path.join(folder, urlsplit(image_url).path.split("/")[-1])
 
     with open(save_as, "wb+") as f:
@@ -75,14 +73,15 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def save_books(books_id, folder="books/"):
-    os.makedirs(folder, exist_ok=True)
+def save_books(books_id, books_folder="books/", images_folders="images/"):
+    os.makedirs(books_folder, exist_ok=True)
+    os.makedirs(images_folders, exist_ok=True)
 
     for book_id in books_id:
         book_url = f"https://tululu.org/txt.php?id={book_id}"
 
         try:
-            download_book(book_url, folder)
+            download_book(book_url, books_folder)
         except requests.HTTPError:
             print(f"{book_url} отсутствует на сайте!", file=sys.stderr)
             continue
