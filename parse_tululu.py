@@ -62,7 +62,7 @@ def parse_book_page(page_html):
     return {
         "title": title,
         "author": author,
-        "image": urljoin("https://tululu.org", relative_patth_to_image),
+        "image": urljoin("https://tululu.org/shots/", relative_patth_to_image),
         "comments": [comment.find(class_="black").text for comment in comments],
         "genres": [genre.text for genre in genres]
     }
