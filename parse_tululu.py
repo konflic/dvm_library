@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 import argparse
 
@@ -18,6 +19,7 @@ def download_txt(url, folder):
     try:
         check_for_redirect(response)
     except requests.HTTPError:
+        print(f"{url} отсутствует на сайте!", file=sys.stderr)
         return None
     else:
         book_data = parse_book_page(get_book_html(book_id=url.split("=")[-1]))
