@@ -16,20 +16,16 @@ def download_txt(url, folder):
     """
     response = requests.get(url, verify=False, allow_redirects=False)
 
-    try:
-        check_for_redirect(response)
-    except requests.HTTPError:
-        print(f"{url} отсутствует на сайте!", file=sys.stderr)
-        return None
-    else:
-        book_data = parse_book_page(get_book_html(book_id=url.split("=")[-1]))
+    check_for_redirect(response)
 
-        download_image(book_data["image"])
+    book_data = parse_book_page(get_book_html(book_id=url.split("=")[-1]))
 
-        path_for_book = os.path.join(folder, sanitize_filename(f"{book_data['title']}.txt"))
+    download_image(book_data["image"])
 
-        with open(path_for_book, "w+") as f:
-            f.write(response.text)
+    path_for_book = os.path.join(folder, sanitize_filename(f"{book_data['title']}.txt"))
+
+    with open(path_for_book, "w+") as f:
+        f.write(response.text)
 
     return path_for_book
 
@@ -76,7 +72,13 @@ def save_books(books_id, folder="books/"):
         os.makedirs(folder)
 
     for book_id in books_id:
-        download_txt(f"https://tululu.org/txt.php?id={book_id}", folder)
+        book_url = f"https://tululu.org/txt.php?id={book_id}"
+
+        try:
+            download_txt(book_url, folder)
+        except requests.HTTPError:
+            print(f"{book_url} отсутствует на сайте!", file=sys.stderr)
+            continue
 
 
 if __name__ == "__main__":
