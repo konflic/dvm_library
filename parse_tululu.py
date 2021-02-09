@@ -3,7 +3,7 @@ import sys
 import requests
 import argparse
 
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 from pathvalidate import sanitize_filename
 from bs4 import BeautifulSoup
 
@@ -20,7 +20,7 @@ def download_book(url, folder):
 
     check_for_redirect(response)
 
-    book_data = parse_book_page(get_book_html(book_id=url.split("=")[-1]))
+    book_data = parse_book_page(get_book_html(book_id=urlsplit(url).path.split("=")[-1]))
 
     download_image(book_data["image"])
 
@@ -36,7 +36,7 @@ def download_image(image_url, folder="images/"):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    save_as = os.path.join(folder, image_url.split("/")[-1])
+    save_as = os.path.join(folder, urlsplit(image_url).path.split("/")[-1])
 
     with open(save_as, "wb+") as f:
         response = requests.get(image_url, verify=False)
