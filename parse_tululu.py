@@ -73,11 +73,11 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def save_books(books_id, books_folder="books/", images_folders="images/"):
+def save_books(book_ids, books_folder="books/", images_folders="images/"):
     os.makedirs(books_folder, exist_ok=True)
     os.makedirs(images_folders, exist_ok=True)
 
-    for book_id in books_id:
+    for book_id in book_ids:
         book_url = f"https://tululu.org/txt.php?id={book_id}"
 
         try:
