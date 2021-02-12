@@ -35,8 +35,7 @@ def download_book(url, folder):
     return path_for_book
 
 
-def download_image(image_url, book_title, folder="images/"):
-    image_name = book_title
+def download_image(image_url, image_name, folder="images/"):
     save_as = os.path.join(folder, image_name)
 
     with open(save_as, "wb+") as f:
