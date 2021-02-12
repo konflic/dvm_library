@@ -12,14 +12,14 @@ MacOS и Linux
 ```bash
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
 Windows (PowerShell)
 ```
 python -m venv venv
 source .\venv\Scripts\activate.ps1
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
 ### Использование
