@@ -22,11 +22,11 @@ def download_book(url, folder):
 
     book_id = urlsplit(url).query.split("=")[-1]
     book_html = get_book_html(book_id)
-    book_data = parse_book_page(book_html)
+    book = parse_book_page(book_html)
 
-    download_image(book_data["image"])
+    download_image(book["image"])
 
-    book_filename = sanitize_filename(f"{book_data['title']}.txt")
+    book_filename = sanitize_filename(f"{book['title']}.txt")
     path_for_book = os.path.join(folder, book_filename)
 
     with open(path_for_book, "w+") as f:
