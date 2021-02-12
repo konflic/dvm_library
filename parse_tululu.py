@@ -20,7 +20,7 @@ def download_book(url, folder):
 
     check_for_redirect(response)
 
-    book_data = parse_book_page(get_book_html(book_id=urlsplit(url).path.split("=")[-1]))
+    book_data = parse_book_page(get_book_html(book_id=urlsplit(url).query.split("=")[-1]))
 
     download_image(book_data["image"])
 
