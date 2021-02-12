@@ -20,11 +20,14 @@ def download_book(url, folder):
 
     check_for_redirect(response)
 
-    book_data = parse_book_page(get_book_html(book_id=urlsplit(url).query.split("=")[-1]))
+    book_id = urlsplit(url).query.split("=")[-1]
+    book_html = get_book_html(book_id)
+    book_data = parse_book_page(book_html)
 
     download_image(book_data["image"])
 
-    path_for_book = os.path.join(folder, sanitize_filename(f"{book_data['title']}.txt"))
+    book_filename = sanitize_filename(f"{book_data['title']}.txt")
+    path_for_book = os.path.join(folder, book_filename)
 
     with open(path_for_book, "w+") as f:
         f.write(response.text)
@@ -33,7 +36,8 @@ def download_book(url, folder):
 
 
 def download_image(image_url, folder="images/"):
-    save_as = os.path.join(folder, urlsplit(image_url).path.split("/")[-1])
+    image_name = urlsplit(image_url).path.split("/")[-1]
+    save_as = os.path.join(folder, image_name)
 
     with open(save_as, "wb+") as f:
         response = requests.get(image_url, verify=False)
