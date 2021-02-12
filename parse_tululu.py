@@ -24,8 +24,9 @@ def download_book(url, folder):
     book_html = get_book_html(book_id)
     book = parse_book_page(book_html)
     book_filename = sanitize_filename(f"{book['title']}-{book_id}")
+    book_image_extension = os.path.splitext(book["image"])[1]
 
-    download_image(book["image"], f"{book_filename}.png")
+    download_image(book["image"], f"{book_filename}{book_image_extension}")
 
     path_for_book = os.path.join(folder, f"{book_filename}.txt")
 
