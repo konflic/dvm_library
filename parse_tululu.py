@@ -23,11 +23,11 @@ def download_book(url, folder):
     book_id = urlsplit(url).query.split("=")[-1]
     book_html = get_book_html(book_id)
     book = parse_book_page(book_html)
+    book_filename = sanitize_filename(f"{book['title']}-{book_id}")
 
-    download_image(book["image"])
+    download_image(book["image"], f"{book_filename}.png")
 
-    book_filename = sanitize_filename(f"{book['title']}.txt")
-    path_for_book = os.path.join(folder, book_filename)
+    path_for_book = os.path.join(folder, f"{book_filename}.txt")
 
     with open(path_for_book, "w+") as f:
         f.write(response.text)
@@ -35,8 +35,8 @@ def download_book(url, folder):
     return path_for_book
 
 
-def download_image(image_url, folder="images/"):
-    image_name = urlsplit(image_url).path.split("/")[-1]
+def download_image(image_url, book_title, folder="images/"):
+    image_name = book_title
     save_as = os.path.join(folder, image_name)
 
     with open(save_as, "wb+") as f:
@@ -62,8 +62,6 @@ def parse_book_page(page_html):
     relative_patth_to_image = soup.find("div", class_="bookimage").find("img").get("src")
     comment_tags = soup.find(id="content").find_all(class_="texts")
     genres = soup.find(id="content").find("span", class_="d_book").find_all("a")
-
-    print(urljoin("https://tululu.org/", relative_patth_to_image))
 
     return {
         "title": title,
