@@ -63,10 +63,12 @@ def parse_book_page(page_html):
     comment_tags = soup.find(id="content").find_all(class_="texts")
     genres = soup.find(id="content").find("span", class_="d_book").find_all("a")
 
+    print(urljoin("https://tululu.org/", relative_patth_to_image))
+
     return {
         "title": title,
         "author": author,
-        "image": urljoin("https://tululu.org/shots/", relative_patth_to_image),
+        "image": urljoin("https://tululu.org", relative_patth_to_image),
         "comments": [comment_tag.find(class_="black").text for comment_tag in comment_tags],
         "genres": [genre.text for genre in genres]
     }
