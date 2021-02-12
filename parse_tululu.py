@@ -86,8 +86,6 @@ def save_books(book_ids, books_folder="books/", images_folders="images/"):
             print(f"{book_url} отсутствует на сайте!", file=sys.stderr)
         except requests.ConnectionError:
             print(f"Ошибка соединения при обращении к {book_url}!", file=sys.stderr)
-        finally:
-            continue
 
 
 if __name__ == "__main__":
