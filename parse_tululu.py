@@ -3,7 +3,7 @@ import sys
 import requests
 import argparse
 
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit, unquote
 from pathvalidate import sanitize_filename
 from bs4 import BeautifulSoup
 
@@ -24,9 +24,9 @@ def download_book(url, folder):
     book_html = get_book_html(book_id)
     book = parse_book_page(book_html)
     book_filename = sanitize_filename(f"{book['title']}-{book_id}")
-    book_image_extension = os.path.splitext(book["image"])[1]
+    book_image_file = extract_filename_from_url(book["image"])
 
-    download_image(book["image"], f"{book_filename}{book_image_extension}")
+    download_image(book["image"], f"{book_filename}{os.path.splitext(book_image_file)[1]}")
 
     path_for_book = os.path.join(folder, f"{book_filename}.txt")
 
@@ -34,6 +34,11 @@ def download_book(url, folder):
         f.write(response.text)
 
     return path_for_book
+
+
+def extract_filename_from_url(file_url):
+    unquoted_url = unquote(file_url)
+    return os.path.split(urlsplit(unquoted_url).path)[1]
 
 
 def download_image(image_url, image_name, folder="images/"):
@@ -94,8 +99,8 @@ def save_books(book_ids, books_folder="books/", images_folders="images/"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("start_id", type=int, default=1)
-    parser.add_argument("end_id", type=int, default=10)
+    parser.add_argument("--start_id", type=int, default=1, required=False)
+    parser.add_argument("--end_id", type=int, default=10, required=False)
 
     args = parser.parse_args()
 
