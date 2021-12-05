@@ -61,18 +61,18 @@ def get_book_html(book_id):
 
 def parse_book_page(page_html):
     soup = BeautifulSoup(page_html, "lxml")
-    h1 = soup.find(id="content").find("h1").text
+    h1 = soup.select_one("#content h1").text
 
     title, author = map(lambda item: item.strip(), h1.split("::"))
-    path_to_image = soup.find("div", class_="bookimage").find("img").get("src")
-    comment_tags = soup.find(id="content").find_all(class_="texts")
-    genre_tags = soup.find(id="content").find("span", class_="d_book").find_all("a")
+    path_to_image = soup.select_one("div.bookimage img").get("src")
+    comment_tags = soup.select("#content .texts")
+    genre_tags = soup.select("#content span.d_book a")
 
     return {
         "title": title,
         "author": author,
         "image": urljoin("https://tululu.org/", path_to_image),
-        "comments": [comment_tag.find(class_="black").text for comment_tag in comment_tags],
+        "comments": [comment_tag.select_one(selector=".black").text for comment_tag in comment_tags],
         "genres": [genre.text for genre in genre_tags]
     }
 
