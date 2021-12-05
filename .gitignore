@@ -127,6 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Project
 books/
 images/
 .idea/
+*.json

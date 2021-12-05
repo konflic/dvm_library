@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import requests
@@ -15,25 +16,24 @@ def download_book(url, folder):
     :return: (str) Путь до файла, куда сохранён текст или None
     """
     response = requests.get(url, verify=False, allow_redirects=False)
-
     response.raise_for_status()
-
     check_for_redirect(response)
 
     book_id = urlsplit(url).query.split("=")[-1]
     book_html = get_book_html(book_id)
-    book = parse_book_page(book_html)
-    book_filename = sanitize_filename(f"{book['title']}-{book_id}")
-    book_image_file = extract_filename_from_url(book["image"])
+    book_info = parse_book_page(book_html)
 
-    download_image(book["image"], f"{book_filename}{os.path.splitext(book_image_file)[1]}")
+    book_filename = sanitize_filename(f"{book_info['title']}-{book_id}")
+    book_image_file = extract_filename_from_url(book_info["image"])
+
+    download_image(book_info["image"], f"{book_filename}{os.path.splitext(book_image_file)[1]}")
 
     path_for_book = os.path.join(folder, f"{book_filename}.txt")
 
     with open(path_for_book, "w+") as f:
         f.write(response.text)
 
-    return path_for_book
+    return book_info
 
 
 def extract_filename_from_url(file_url):
@@ -82,19 +82,24 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def save_books(book_ids, books_folder="books/", images_folders="images/"):
+def save_books(book_ids, books_folder="books", images_folders="images"):
     os.makedirs(books_folder, exist_ok=True)
     os.makedirs(images_folders, exist_ok=True)
 
+    book_info_json = []
     for book_id in book_ids:
         book_url = f"https://tululu.org/txt.php?id={book_id}"
 
         try:
-            download_book(book_url, books_folder)
+            book_info = download_book(book_url, books_folder)
+            book_info_json.append(book_info)
         except requests.HTTPError:
             print(f"{book_url} отсутствует на сайте!", file=sys.stderr)
         except requests.ConnectionError:
             print(f"Ошибка соединения при обращении к {book_url}!", file=sys.stderr)
+
+    with open("books_info.json", "w+", encoding="utf-8") as f:
+        f.write(json.dumps(book_info_json, ensure_ascii=False))
 
 
 if __name__ == "__main__":
