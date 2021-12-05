@@ -26,8 +26,12 @@ def parse_category_page(page_html):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("--dest_folder", type=str, required=True)
+    parser.add_argument("--skip_imgs", action="store_true", default=False)
+    parser.add_argument("--skip_txt", action="store_true", default=False)
+    parser.add_argument("--json_path", type=str, required=True)
     parser.add_argument("--start_page", type=int, default=1, required=False)
-    parser.add_argument("--end_page", type=int, default=5, required=False)
+    parser.add_argument("--end_page", type=int, default=701, required=False)
 
     args = parser.parse_args()
 
@@ -36,4 +40,10 @@ if __name__ == "__main__":
         page_html = get_category_html(page=page)
         book_ids.extend(parse_category_page(page_html))
 
-    save_books(book_ids)
+    save_books(
+        book_ids=book_ids,
+        json_path=args.json_path,
+        dest_folder=args.dest_folder,
+        skip_imgs=args.skip_imgs,
+        skip_txt=args.skip_txt
+    )

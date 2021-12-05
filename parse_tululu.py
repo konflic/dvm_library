@@ -9,12 +9,14 @@ from pathvalidate import sanitize_filename
 from bs4 import BeautifulSoup
 
 
-def download_book(url, folder):
+def download_book(url, folder, skip_txt):
     """Функция для скачивания книг.
     :param url (str): Ссылка на текст, который хочется скачать.
     :param folder (str): Папка, куда сохранять.
     :return: (str) Путь до файла, куда сохранён текст или None
     """
+    os.makedirs(folder, exist_ok=True)
+
     response = requests.get(url, verify=False, allow_redirects=False)
     response.raise_for_status()
     check_for_redirect(response)
@@ -24,14 +26,11 @@ def download_book(url, folder):
     book_info = parse_book_page(book_html)
 
     book_filename = sanitize_filename(f"{book_info['title']}-{book_id}")
-    book_image_file = extract_filename_from_url(book_info["image"])
-
-    download_image(book_info["image"], f"{book_filename}{os.path.splitext(book_image_file)[1]}")
-
     path_for_book = os.path.join(folder, f"{book_filename}.txt")
 
-    with open(path_for_book, "w+") as f:
-        f.write(response.text)
+    if not skip_txt:
+        with open(path_for_book, "w+") as f:
+            f.write(response.text)
 
     return book_info
 
@@ -43,6 +42,7 @@ def extract_filename_from_url(file_url):
 
 def download_image(image_url, image_name, folder="images/"):
     save_as = os.path.join(folder, image_name)
+    os.makedirs(folder, exist_ok=True)
 
     with open(save_as, "wb+") as f:
         response = requests.get(image_url, verify=False)
@@ -82,23 +82,42 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def save_books(book_ids, books_folder="books", images_folders="images"):
-    os.makedirs(books_folder, exist_ok=True)
-    os.makedirs(images_folders, exist_ok=True)
+def save_books(
+        book_ids,
+        json_path="books_info.json",
+        books_folder="books",
+        images_folders="images",
+        dest_folder="results",
+        skip_imgs=False,
+        skip_txt=False
+):
+    os.makedirs(dest_folder, exist_ok=True)
 
     book_info_json = []
     for book_id in book_ids:
         book_url = f"https://tululu.org/txt.php?id={book_id}"
 
         try:
-            book_info = download_book(book_url, books_folder)
+
+            book_info = download_book(book_url, os.path.join(dest_folder, books_folder), skip_txt=skip_txt)
+
+            book_filename = sanitize_filename(f"{book_info['title']}-{book_id}")
+            book_image_file = extract_filename_from_url(book_info["image"])
+
+            if not skip_imgs:
+                download_image(
+                    image_url=book_info["image"],
+                    image_name=f"{book_filename}{os.path.splitext(book_image_file)[1]}",
+                    folder=os.path.join(dest_folder, images_folders)
+                )
+
             book_info_json.append(book_info)
         except requests.HTTPError:
             print(f"{book_url} отсутствует на сайте!", file=sys.stderr)
         except requests.ConnectionError:
             print(f"Ошибка соединения при обращении к {book_url}!", file=sys.stderr)
 
-    with open("books_info.json", "w+", encoding="utf-8") as f:
+    with open(json_path, "w+", encoding="utf-8") as f:
         f.write(json.dumps(book_info_json, ensure_ascii=False))
 
 
