@@ -92,11 +92,9 @@ def get_category_html(category_id="l55", page=1):
 
 
 def parse_category_page(page_html):
-    book_ids = []
     soup = BeautifulSoup(page_html, "lxml")
     book_links = soup.select(selector="#content a[href^='/b']")
-    for book_link in book_links:
-        book_ids.append(book_link["href"][2:-1])  # /b300/ -> b300
+    book_ids = [book_link["href"][2:-1] for book_link in book_links]
     return book_ids
 
 
