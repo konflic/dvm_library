@@ -9,27 +9,9 @@ from pathvalidate import sanitize_filename
 from bs4 import BeautifulSoup
 
 
-def download_book(book_id, folder, skip_txt):
-    os.makedirs(folder, exist_ok=True)
-
-    response = requests.get(
-        url="https://tululu.org/txt.php",
-        params={"id": book_id},
-        verify=False,
-        allow_redirects=False
-    )
-    response.raise_for_status()
-    check_for_redirect(response)
-
+def get_book_info(book_id):
     book_html = get_book_html(book_id)
     book_info = parse_book_page(book_html)
-    book_filename = sanitize_filename(f"{book_info['title']}-{book_id}")
-    path_for_book = os.path.join(folder, f"{book_filename}.txt")
-
-    if not skip_txt:
-        with open(path_for_book, "w+") as f:
-            f.write(response.text)
-
     return book_info
 
 
@@ -38,7 +20,7 @@ def extract_filename_from_url(file_url):
     return os.path.split(urlsplit(unquoted_url).path)[1]
 
 
-def download_image(image_url, image_name, folder="images/"):
+def download_book_image(image_url, image_name, folder):
     save_as = os.path.join(folder, image_name)
     os.makedirs(folder, exist_ok=True)
 
@@ -48,11 +30,26 @@ def download_image(image_url, image_name, folder="images/"):
         f.write(response.content)
 
 
+def download_book_text(book_id, book_name, folder):
+    save_as = os.path.join(folder, book_name)
+    os.makedirs(folder, exist_ok=True)
+
+    with open(save_as, "w+") as f:
+        response = requests.get(
+            url="https://tululu.org/txt.php",
+            params={"id": book_id},
+            verify=False,
+            allow_redirects=False
+        )
+        response.raise_for_status()
+        check_for_redirect(response)
+        f.write(response.text)
+
+
 def get_book_html(book_id):
     response = requests.get(f"https://tululu.org/b{book_id}/", verify=False)
     response.raise_for_status()
     check_for_redirect(response)
-
     return response.text
 
 
@@ -83,7 +80,6 @@ def get_category_html(category_id="l55", page=1):
     response = requests.get(f"https://tululu.org/{category_id}/{page}", verify=False)
     response.raise_for_status()
     check_for_redirect(response)
-
     return response.text
 
 
@@ -91,7 +87,6 @@ def parse_category_page(page_html):
     soup = BeautifulSoup(page_html, "lxml")
     book_links = soup.select(selector="#content a[href^='/b']")
     book_ids = [book_link["href"][2:-1] for book_link in book_links]
-
     return book_ids
 
 
@@ -113,29 +108,36 @@ def save_books(
 ):
     os.makedirs(dest_folder, exist_ok=True)
 
-    book_info_json = []
+    books_info_json = []
     for book_id in book_ids:
 
         try:
-            book_info = download_book(book_id, os.path.join(dest_folder, books_folder), skip_txt=skip_txt)
+            book_info = get_book_info(book_id)
             book_filename = sanitize_filename(f"{book_info['title']}-{book_id}")
-            book_image_file = extract_filename_from_url(book_info["image"])
+
+            if not skip_txt:
+                download_book_text(
+                    book_id=book_id,
+                    book_name=book_filename,
+                    folder=os.path.join(dest_folder, books_folder)
+                )
 
             if not skip_imgs:
-                download_image(
+                book_image_file = extract_filename_from_url(book_info["image"])
+                download_book_image(
                     image_url=book_info["image"],
                     image_name=f"{book_filename}{os.path.splitext(book_image_file)[1]}",
                     folder=os.path.join(dest_folder, images_folders)
                 )
 
-            book_info_json.append(book_info)
+            books_info_json.append(book_info)
         except requests.HTTPError:
             print(f"Книга с id={book_id} отсутствует на сайте.", file=sys.stderr)
         except requests.ConnectionError:
             print(f"Ошибка соединения при обращении к книге с id={book_id}.", file=sys.stderr)
 
     with open(json_path, "w+", encoding="utf-8") as f:
-        f.write(json.dumps(book_info_json, ensure_ascii=False))
+        f.write(json.dumps(books_info_json, ensure_ascii=False))
 
 
 if __name__ == "__main__":
