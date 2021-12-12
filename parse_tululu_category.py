@@ -9,22 +9,20 @@ from pathvalidate import sanitize_filename
 from bs4 import BeautifulSoup
 
 
-def download_book(url, folder, skip_txt):
-    """Функция для скачивания книг.
-    :param url (str): Ссылка на текст, который хочется скачать.
-    :param folder (str): Папка, куда сохранять.
-    :return: (str) Путь до файла, куда сохранён текст или None
-    """
+def download_book(book_id, folder, skip_txt):
     os.makedirs(folder, exist_ok=True)
 
-    response = requests.get(url, verify=False, allow_redirects=False)
+    response = requests.get(
+        url="https://tululu.org/txt.php",
+        params={"id": book_id},
+        verify=False,
+        allow_redirects=False
+    )
     response.raise_for_status()
     check_for_redirect(response)
 
-    book_id = urlsplit(url).query.split("=")[-1]
     book_html = get_book_html(book_id)
     book_info = parse_book_page(book_html)
-
     book_filename = sanitize_filename(f"{book_info['title']}-{book_id}")
     path_for_book = os.path.join(folder, f"{book_filename}.txt")
 
@@ -47,7 +45,6 @@ def download_image(image_url, image_name, folder="images/"):
     with open(save_as, "wb+") as f:
         response = requests.get(image_url, verify=False)
         response.raise_for_status()
-
         f.write(response.content)
 
 
@@ -95,6 +92,7 @@ def parse_category_page(page_html):
     soup = BeautifulSoup(page_html, "lxml")
     book_links = soup.select(selector="#content a[href^='/b']")
     book_ids = [book_link["href"][2:-1] for book_link in book_links]
+
     return book_ids
 
 
@@ -108,9 +106,9 @@ def get_last_category_page(category_id="l55"):
 def save_books(
         book_ids,
         json_path="books_info.json",
-        books_folder="books",
-        images_folders="images",
-        dest_folder="results",
+        books_folder="books/",
+        images_folders="images/",
+        dest_folder="results/",
         skip_imgs=False,
         skip_txt=False
 ):
@@ -118,12 +116,9 @@ def save_books(
 
     book_info_json = []
     for book_id in book_ids:
-        book_url = f"https://tululu.org/txt.php?id={book_id}"
 
         try:
-
-            book_info = download_book(book_url, os.path.join(dest_folder, books_folder), skip_txt=skip_txt)
-
+            book_info = download_book(book_id, os.path.join(dest_folder, books_folder), skip_txt=skip_txt)
             book_filename = sanitize_filename(f"{book_info['title']}-{book_id}")
             book_image_file = extract_filename_from_url(book_info["image"])
 
@@ -136,9 +131,9 @@ def save_books(
 
             book_info_json.append(book_info)
         except requests.HTTPError:
-            print(f"{book_url} отсутствует на сайте!", file=sys.stderr)
+            print(f"Книга с id={book_id} отсутствует на сайте.", file=sys.stderr)
         except requests.ConnectionError:
-            print(f"Ошибка соединения при обращении к {book_url}!", file=sys.stderr)
+            print(f"Ошибка соединения при обращении к книге с id={book_id}.", file=sys.stderr)
 
     with open(json_path, "w+", encoding="utf-8") as f:
         f.write(json.dumps(book_info_json, ensure_ascii=False))
