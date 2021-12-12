@@ -98,6 +98,13 @@ def parse_category_page(page_html):
     return book_ids
 
 
+def get_last_category_page(category_id="l55"):
+    category_html = get_category_html(category_id=category_id)
+    soup = BeautifulSoup(category_html, "lxml")
+    last_page = soup.select(selector="#content p.center a:nth-last-child(1)").text
+    return int(last_page)
+
+
 def save_books(
         book_ids,
         json_path="books_info.json",
@@ -138,14 +145,15 @@ def save_books(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    last_page = get_last_category_page()
 
+    parser = argparse.ArgumentParser()
     parser.add_argument("--dest_folder", type=str, required=True)
     parser.add_argument("--skip_imgs", action="store_true", default=False)
     parser.add_argument("--skip_txt", action="store_true", default=False)
     parser.add_argument("--json_path", type=str, required=True)
     parser.add_argument("--start_page", type=int, default=1, required=False)
-    parser.add_argument("--end_page", type=int, default=701, required=False)
+    parser.add_argument("--end_page", type=int, default=last_page, required=False)
 
     args = parser.parse_args()
 
