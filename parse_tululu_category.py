@@ -100,9 +100,9 @@ def get_last_category_page(category_id="l55"):
 def save_books(
         book_ids,
         json_path="books_info.json",
+        dest_folder="results/",
         books_folder="books/",
         images_folders="images/",
-        dest_folder="results/",
         skip_imgs=False,
         skip_txt=False
 ):
@@ -146,10 +146,10 @@ if __name__ == "__main__":
     last_page = get_last_category_page()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dest_folder", type=str, required=True)
+    parser.add_argument("--dest_folder", type=str, default="results/")
+    parser.add_argument("--json_path", type=str, default="books_info.json")
     parser.add_argument("--skip_imgs", action="store_true", default=False)
     parser.add_argument("--skip_txt", action="store_true", default=False)
-    parser.add_argument("--json_path", type=str, required=True)
     parser.add_argument("--start_page", type=int, default=1, required=False)
     parser.add_argument("--end_page", type=int, default=last_page, required=False)
 
