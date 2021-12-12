@@ -93,7 +93,7 @@ def parse_category_page(page_html):
 def get_last_category_page(category_id="l55"):
     category_html = get_category_html(category_id=category_id)
     soup = BeautifulSoup(category_html, "lxml")
-    last_page = soup.select(selector="#content p.center a:nth-last-child(1)").text
+    last_page = soup.select(selector="#content p.center a:nth-last-child(1)")[0].text
     return int(last_page)
 
 
