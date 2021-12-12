@@ -124,9 +124,11 @@ def save_books(
 
             if not skip_imgs:
                 book_image_file = extract_filename_from_url(book_info["image"])
+                image_extension = os.path.splitext(book_image_file)[1]
+
                 download_book_image(
                     image_url=book_info["image"],
-                    image_name=f"{book_filename}{os.path.splitext(book_image_file)[1]}",
+                    image_name=f"{book_filename}{image_extension}",
                     folder=os.path.join(dest_folder, images_folders)
                 )
 
