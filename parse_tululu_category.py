@@ -80,8 +80,7 @@ def check_for_redirect(response):
 
 
 def get_category_html(category_id="l55", page=1):
-    page_prefix = f"{page}/" if page > 1 else ""
-    response = requests.get(f"https://tululu.org/{category_id}/" + page_prefix, verify=False)
+    response = requests.get(f"https://tululu.org/{category_id}/{page}", verify=False)
     response.raise_for_status()
     check_for_redirect(response)
 
