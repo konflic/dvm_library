@@ -3,10 +3,13 @@ import os
 import sys
 import requests
 import argparse
+import urllib3
 
 from urllib.parse import urljoin, urlsplit, unquote
 from pathvalidate import sanitize_filename
 from bs4 import BeautifulSoup
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def get_book_info(book_id):
@@ -34,15 +37,16 @@ def download_book_text(book_id, book_name, folder):
     save_as = os.path.join(folder, book_name)
     os.makedirs(folder, exist_ok=True)
 
+    response = requests.get(
+        url="https://tululu.org/txt.php",
+        params={"id": book_id},
+        verify=False,
+        allow_redirects=False,
+    )
+    response.raise_for_status()
+    check_for_redirect(response)
+
     with open(save_as, "w+") as f:
-        response = requests.get(
-            url="https://tululu.org/txt.php",
-            params={"id": book_id},
-            verify=False,
-            allow_redirects=False
-        )
-        response.raise_for_status()
-        check_for_redirect(response)
         f.write(response.text)
 
 
@@ -66,8 +70,11 @@ def parse_book_page(page_html):
         "title": title,
         "author": author,
         "image": urljoin("https://tululu.org/", path_to_image),
-        "comments": [comment_tag.select_one(selector=".black").text for comment_tag in comment_tags],
-        "genres": [genre.text for genre in genre_tags]
+        "comments": [
+            comment_tag.select_one(selector=".black").text
+            for comment_tag in comment_tags
+        ],
+        "genres": [genre.text for genre in genre_tags],
     }
 
 
@@ -87,7 +94,7 @@ def parse_category_page(page_html):
     soup = BeautifulSoup(page_html, "lxml")
     book_links = soup.select(selector="#content a[href^='/b']")
     book_ids = [book_link["href"][2:-1] for book_link in book_links]
-    return book_ids
+    return list(set(book_ids))
 
 
 def get_last_category_page(category_id="l55"):
@@ -98,45 +105,52 @@ def get_last_category_page(category_id="l55"):
 
 
 def save_books(
-        book_ids,
-        json_path="books_info.json",
-        dest_folder="results/",
-        books_folder="books/",
-        images_folders="images/",
-        skip_imgs=False,
-        skip_txt=False
+    book_ids,
+    json_path="books_info.json",
+    dest_folder="results/",
+    books_folder="books/",
+    images_folders="images/",
+    skip_imgs=False,
+    skip_txt=False,
 ):
     os.makedirs(dest_folder, exist_ok=True)
 
     books_info_json = []
+
     for book_id in book_ids:
 
         try:
             book_info = get_book_info(book_id)
-            book_filename = sanitize_filename(f"{book_info['title']}-{book_id}")
+            book_filename = sanitize_filename(f"{book_info['title'][:200]}-{book_id}")
 
             if not skip_txt:
                 download_book_text(
                     book_id=book_id,
                     book_name=book_filename,
-                    folder=os.path.join(dest_folder, books_folder)
+                    folder=os.path.join(dest_folder, books_folder),
                 )
 
             if not skip_imgs:
                 book_image_file = extract_filename_from_url(book_info["image"])
                 image_extension = os.path.splitext(book_image_file)[1]
+                book_info["image_file"] = f"{book_filename}{image_extension}"
 
                 download_book_image(
                     image_url=book_info["image"],
                     image_name=f"{book_filename}{image_extension}",
-                    folder=os.path.join(dest_folder, images_folders)
+                    folder=os.path.join(dest_folder, images_folders),
                 )
 
             books_info_json.append(book_info)
         except requests.HTTPError:
             print(f"Книга с id={book_id} отсутствует на сайте.", file=sys.stderr)
         except requests.ConnectionError:
-            print(f"Ошибка соединения при обращении к книге с id={book_id}.", file=sys.stderr)
+            print(
+                f"Ошибка соединения при обращении к книге с id={book_id}.",
+                file=sys.stderr,
+            )
+        else:
+            print(f"Книга {book_info['title']} успешно загружена", file=sys.stdout)
 
     with open(json_path, "w+", encoding="utf-8") as f:
         f.write(json.dumps(books_info_json, ensure_ascii=False))
@@ -156,7 +170,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     book_ids = []
-    for page in range(args.start_page, args.end_page):
+    for page in range(args.start_page, args.end_page + 1):
         page_html = get_category_html(page=page)
         book_ids.extend(parse_category_page(page_html))
 
@@ -165,5 +179,5 @@ if __name__ == "__main__":
         json_path=args.json_path,
         dest_folder=args.dest_folder,
         skip_imgs=args.skip_imgs,
-        skip_txt=args.skip_txt
+        skip_txt=args.skip_txt,
     )
