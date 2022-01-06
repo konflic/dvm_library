@@ -46,7 +46,7 @@ def download_book_text(book_id, book_name, folder):
     response.raise_for_status()
     check_for_redirect(response)
 
-    with open(save_as, "w+") as f:
+    with open(save_as, "w", encoding="utf-8") as f:
         f.write(response.text)
 
 
@@ -121,14 +121,17 @@ def save_books(
 
         try:
             book_info = get_book_info(book_id)
-            book_filename = sanitize_filename(f"{book_info['title'][:200]}-{book_id}")
+            book_filename = sanitize_filename(
+                f"{book_info['title'][:200]}-{book_id}"
+            ).replace(" ", "_")
 
             if not skip_txt:
                 download_book_text(
                     book_id=book_id,
-                    book_name=book_filename,
+                    book_name=f"{book_filename}.txt",
                     folder=os.path.join(dest_folder, books_folder),
                 )
+                book_info["book_text"] = f"{book_filename}.txt"
 
             if not skip_imgs:
                 book_image_file = extract_filename_from_url(book_info["image"])
@@ -143,14 +146,14 @@ def save_books(
 
             books_info_json.append(book_info)
         except requests.HTTPError:
-            print(f"Книга с id={book_id} отсутствует на сайте.", file=sys.stderr)
+            print(f"Книга с id={book_id} отсутствует на сайте", file=sys.stderr)
         except requests.ConnectionError:
             print(
-                f"Ошибка соединения при обращении к книге с id={book_id}.",
+                f"Ошибка соединения при обращении к книге с id={book_id}",
                 file=sys.stderr,
             )
         else:
-            print(f"Книга {book_info['title']} успешно загружена", file=sys.stdout)
+            print(f"Книга '{book_info['title']}' успешно загружена", file=sys.stdout)
 
     with open(json_path, "w+", encoding="utf-8") as f:
         f.write(json.dumps(books_info_json, ensure_ascii=False))
