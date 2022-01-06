@@ -28,13 +28,13 @@ def on_reload():
 
             os.makedirs("pages", exist_ok=True)
 
-            with open(f"pages/index{page}.html", "w", encoding="utf-8") as file:
+            with open(f"pages/index{page if page != 1 else ''}.html", "w", encoding="utf-8") as file:
                 file.write(rendered_page)
 
 on_reload()
 
 server.watch("templates/*.html", on_reload)
 
-webbrowser.open("http://localhost:5500/pages/index1.html")
+webbrowser.open("http://localhost:5500/pages/index.html")
 
 server.serve()
