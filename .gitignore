@@ -129,8 +129,4 @@ dmypy.json
 .pyre/
 
 # Project
-books/
-images/
 .idea/
-*.json
-pages/*.html
