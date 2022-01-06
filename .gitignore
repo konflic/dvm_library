@@ -133,4 +133,4 @@ books/
 images/
 .idea/
 *.json
-index.html
+pages/*.html
