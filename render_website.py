@@ -34,7 +34,6 @@ def on_reload():
 on_reload()
 
 server.watch("templates/*.html", on_reload)
-server.watch("books_info.json", on_reload)
 
 webbrowser.open("http://localhost:5500/pages/index1.html")
 
