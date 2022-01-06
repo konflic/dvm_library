@@ -10,33 +10,47 @@
 
     <title>Library</title>
 </head>
+
 <body>
     <div class="container">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item">
+                    <a class="page-link disabled" href="#" aria-label="Назад">Назад</a>
+                </li>
+                {% for page in pages %}
+                <li class="page-item {{ 'active' if page == 1 }}"><a class="page-link"
+                        href="index{{ page }}.html">{{ page }}</a></li>
+                {% endfor %}
+                <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Вперёд">Вперёд</a>
+                </li>
+            </ul>
+        </nav>
         {% for chunk in books %}
         <div class="row">
             {% for book in chunk %}
-                <div class="col">
-                    <div class="card mb-3" style="max-width: 540px;">
-                        <div class="row no-gutters">
-                            <div class="col-md-4">
-                                <img src="../results/images/{{ book['image_file'] }}" class="card-img"
-                                    alt="{{ book['title'] }}">
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ book['title']|e }}</h5>
-                                    <p class="card-text">{{ book['author']|e }}</p>
-                                    <p class="card-text"><a href="../results/books/{{ book['book_text']|e }}">Читать</a></p>
-                                </div>
+            <div class="col">
+                <div class="card mb-3" style="max-width: 540px;">
+                    <div class="row no-gutters">
+                        <div class="col-md-4">
+                            <img src="../results/images/{{ book['image_file'] }}" class="card-img"
+                                alt="{{ book['title'] }}">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ book['title']|e }}</h5>
+                                <p class="card-text">{{ book['author']|e }}</p>
+                                <p class="card-text"><a href="../results/books/{{ book['book_text']|e }}">Читать</a></p>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
             {% endfor %}
         </div>
         {% endfor %}
     </div>
-    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
     </script>
