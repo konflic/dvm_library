@@ -28,14 +28,14 @@
                 <div class="card mb-3" style="max-width: 540px;">
                     <div class="row no-gutters">
                         <div class="col-md-4">
-                            <img src="../results/images/{{ book['image_file'] }}" class="card-img"
+                            <img src="../results/images/{{ book['image_file']|urlencode }}" class="card-img"
                                 alt="{{ book['title'] }}">
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
                                 <h5 class="card-title">{{ book['title']|e }}</h5>
                                 <p class="card-text">{{ book['author']|e }}</p>
-                                <p class="card-text"><a href="../results/books/{{ book['book_text']|e }}" target="_blank">Читать</a></p>
+                                <p class="card-text"><a href="../results/books/{{ book['book_text']|urlencode }}" target="_blank">Читать</a></p>
                                 {% for genre in book['genres'] %}
                                     <span class="badge bg-light text-dark">{{ genre }}</span>
                                 {% endfor %}
