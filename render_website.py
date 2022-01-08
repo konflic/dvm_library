@@ -19,7 +19,7 @@ template = env.get_template("templates/template.html")
 
 def on_reload():
     with open("books_info.json", "r") as books_json:
-        books = json.loads(books_json.read())
+        books = json.load(books_json)
         start_from = 1
         books_in_row = 2
         books_per_page = 20
