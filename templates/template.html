@@ -13,12 +13,12 @@
     <div class="container">
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center" style="margin-top: 15px;">
-                <li class="page-item"><a class="page-link" href="#">Назад</a></li>
+                <li class="page-item {{ 'disabled' if prev == 0 }}"><a class="page-link" href="index{{ prev }}.html">Назад</a></li>
                 {% for page in pages %}
-                    <li class="page-item{{ ' active' if page == 1 }}"><a class="page-link"
-                            href="index{{ page if page != 1 else '' }}.html">{{ page }}</a></li>
+                    <li class="page-item{{ ' active' if page == current }}"><a class="page-link"
+                            href="index{{ page }}.html">{{ page }}</a></li>
                 {% endfor %}
-                <li class="page-item"><a class="page-link" href="#">Вперёд</a></li>
+                <li class="page-item {{ 'disabled' if _next > pages|length }}"><a class="page-link" href="index{{ _next }}.html">Вперёд</a></li>
             </ul>
         </nav>
         {% for chunk in books %}

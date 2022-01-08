@@ -16,6 +16,7 @@ env = Environment(
 
 template = env.get_template("templates/template.html")
 
+
 def on_reload():
     with open("books_info.json", "r") as books_json:
         books = json.loads(books_json.read())
@@ -24,17 +25,17 @@ def on_reload():
         for page, books in enumerate(chunked(books, 20), start=1):
             
             chunked_books = chunked(books, 2)
-            rendered_page = template.render(books=chunked_books, pages=pages)
+            rendered_page = template.render(books=chunked_books, pages=pages, current=page, prev=page-1, _next=page+1)
 
             os.makedirs("pages", exist_ok=True)
 
-            with open(f"pages/index{page if page != 1 else ''}.html", "w", encoding="utf-8") as file:
+            with open(f"pages/index{page}.html", "w", encoding="utf-8") as file:
                 file.write(rendered_page)
 
 on_reload()
 
 server.watch("templates/*.html", on_reload)
 
-webbrowser.open("http://localhost:5500/pages/index.html")
+webbrowser.open("http://localhost:5500/pages/index1.html")
 
 server.serve()
