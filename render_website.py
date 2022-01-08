@@ -20,11 +20,14 @@ template = env.get_template("templates/template.html")
 def on_reload():
     with open("books_info.json", "r") as books_json:
         books = json.loads(books_json.read())
-        pages = range(1, ceil(len(books) / 20))
+        start_from = 1
+        books_in_row = 2
+        books_per_page = 20
+        pages = range(start_from, ceil(len(books) / books_per_page))
 
-        for page, books in enumerate(chunked(books, 20), start=1):
+        for page, books in enumerate(chunked(books, books_per_page), start=start_from):
             
-            chunked_books = chunked(books, 2)
+            chunked_books = chunked(books, books_in_row)
             rendered_page = template.render(books=chunked_books, pages=pages, current=page, prev=page-1, _next=page+1)
 
             os.makedirs("pages", exist_ok=True)
